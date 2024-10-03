@@ -1,36 +1,6 @@
-import cv2
-
-
-class VideoCapturePipe:
-    def __init__(self, source=0):
-        self.cap = cv2.VideoCapture(source)
-
-    def capture(self):
-        ret, frame = self.cap.read()
-        if not ret:
-            return None
-        return frame
-
-    def release(self):
-        self.cap.release()
-
-
-class MirrorFilterPipe:
-    @staticmethod
-    def process(frame):
-        return cv2.flip(frame, 1)
-
-
-class DisplayPipe:
-    def __init__(self, window_name):
-        self.window_name = window_name
-
-    def display(self, frame):
-        cv2.imshow(self.window_name, frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return False
-        return True
-
+from capture import VideoCapturePipe
+from filters import MirrorFilterPipe
+from display import DisplayPipe
 
 def video_processing_pipeline():
     capture_pipe = VideoCapturePipe()
@@ -50,7 +20,6 @@ def video_processing_pipeline():
 
     capture_pipe.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     video_processing_pipeline()
