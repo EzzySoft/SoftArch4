@@ -59,18 +59,4 @@ class TileAverageFilterPipe:
 
                 output_frame[y1:y2, x1:x2] = average_color
 
-        watermark_text = "SENSITIVE"
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 2
-        font_color = (255, 255, 255)
-        thickness = 3
-
-        text_size = cv2.getTextSize(watermark_text, font, font_scale, thickness)[0]
-
-        # Position text in the center
-        text_x = (width - text_size[0]) // 2
-        text_y = (height + text_size[1]) // 2
-
-        cv2.putText(output_frame, watermark_text, (text_x, text_y), font, font_scale, font_color, thickness)
-
         return output_frame
