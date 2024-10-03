@@ -1,5 +1,6 @@
 from capture import VideoCapturePipe
 from display import DisplayPipe
+from filters.blackandwhite_filter import BlackAndWhiteFilterPipe
 from filters.fisheye_filter import FishEyeFilterPipe
 from filters.mirror_filter import MirrorFilterPipe
 from filters.tileaverage_filter import TileAverageFilterPipe
@@ -12,6 +13,7 @@ class VideoProcessingPipeline:
         self.mirror_filter = MirrorFilterPipe()
         self.fisheye_filter = FishEyeFilterPipe()
         self.tile_filter = TileAverageFilterPipe()
+        self.black_and_white_filter = BlackAndWhiteFilterPipe()
 
         self.original_display = DisplayPipe('Original Video')
         self.mirrored_display = DisplayPipe('Mirrored Video')
@@ -19,6 +21,7 @@ class VideoProcessingPipeline:
         self.tile_display = DisplayPipe('Tile Video')
         self.combined_display = DisplayPipe('Combined Filter Output')
         self.pixelated_display = DisplayPipe('Pixelated Output')
+        self.black_and_white_display = DisplayPipe('Black And White Output')
 
         self.connect_pipes()
 
@@ -35,7 +38,10 @@ class VideoProcessingPipeline:
 
         self.tile_filter.set_next(self.combined_display)
 
-        self.tile_filter.set_next(self.pixelated_display)
+        self.mirror_filter.set_next(self.black_and_white_filter)
+        self.black_and_white_filter.set_next(self.black_and_white_display)
+
+        self.black_and_white_filter.set_next(self.combined_display)
 
     def run(self):
         while True:
@@ -47,9 +53,11 @@ class VideoProcessingPipeline:
 
             mirrored_frame = self.mirror_filter.process(frame)
             if mirrored_frame is not None:
-                fisheye_frame = self.fisheye_filter.process(mirrored_frame)
-                if fisheye_frame is not None:
-                    self.combined_display.process(fisheye_frame)
+                bw_frame = self.black_and_white_filter.process(mirrored_frame)
+                if bw_frame is not None:
+                    fisheye_frame = self.fisheye_filter.process(bw_frame)
+                    if fisheye_frame is not None:
+                        self.combined_display.process(fisheye_frame)
 
             tile_frame = self.tile_filter.process(frame)
             if tile_frame is not None:
@@ -62,6 +70,10 @@ class VideoProcessingPipeline:
             mirrored_frame = self.mirror_filter.process(frame)
             if mirrored_frame is not None:
                 self.mirrored_display.process(mirrored_frame)
+
+            bw_frame = self.black_and_white_filter.process(frame)
+            if bw_frame is not None:
+                self.black_and_white_display.process(bw_frame)
 
         self.capture_pipe.release()
 
